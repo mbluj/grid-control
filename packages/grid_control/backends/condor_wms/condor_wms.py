@@ -196,13 +196,6 @@ class Condor(BasicWMS):
 					jdl_req_str_list.append('%s = %d' % (self._pool_req_dict['walltimeMin'], req_value))
 			elif (req_type == WMS.STORAGE) and req_value:
 				_add_list_classad('requestSEs', req_value)
-			elif (req_type == WMS.MEMORY) and (req_value > 0):
-				jdl_req_str_list.append('request_memory = %dM' % req_value)
-			elif (req_type == WMS.CPUS) and (req_value > 0):
-				jdl_req_str_list.append('request_cpus = %d' % req_value)
-			elif (req_type == WMS.DISKSPACE) and (req_value > 0):
-				jdl_req_str_list.append('request_disk = %d' % (1024 * req_value))
-			# TODO: GLIDEIN_REQUIRE_GLEXEC_USE, WMS.SOFTWARE
 
 		# (HPDA) file location service
 		if 'dataFiles' in self._pool_req_dict:
@@ -215,13 +208,13 @@ class Condor(BasicWMS):
 		jdl_str_list = [
 			'Universe = ' + self._universe,
 			'Executable = ' + script_cmd,
+		        'grid_resource = nordugrid arc-1-kit.gridka.de'
 		]
 		jdl_str_list.extend(self._jdl_writer.get_jdl())
 		jdl_str_list.extend([
 			'Log = ' + os.path.join(self._get_remote_output_dn(), 'GC_Condor.%s.log') % self._task_id,
 			'should_transfer_files = YES',
 			'when_to_transfer_output = ON_EXIT',
-			'transfer_executable = false',
 		])
 		# cancel held jobs - ignore spooling ones
 		remove_cond = '(JobStatus == 5 && HoldReasonCode != 16)'
@@ -278,7 +271,6 @@ class Condor(BasicWMS):
 			# store matching Grid-Control and Condor ID
 			'+GridControl_GCtoWMSID = "%s@$(Cluster).$(Process)"' % task.get_description(jobnum).job_name,
 			'+GridControl_GCIDtoWMSID = "%s@$(Cluster).$(Process)"' % jobnum,
-			'environment = %s' % environ,
 			# condor doesn"t execute the job directly. actual job data, files and arguments
 			# are accessed by the GC scripts (but need to be copied to the worker)
 			'transfer_input_files = ' + str.join(', ', job_sb_in_fn_list),
@@ -347,8 +339,9 @@ class Condor(BasicWMS):
 	def _get_script_and_fn_list(self, task):
 		# resolve file paths for different pool types
 		# handle gc executable separately
-		script_cmd = './gc-run.sh'
 		sb_in_fn_list = [d_s_t[1] for d_s_t in self._get_in_transfer_info_list(task)]
+                script_cmd = sb_in_fn_list[0]  # full path to gc-run.sh
+                sb_in_fn_list = sb_in_fn_list[1:]
 		return script_cmd, sb_in_fn_list
 
 
