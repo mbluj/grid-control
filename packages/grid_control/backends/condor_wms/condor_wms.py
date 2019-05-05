@@ -208,7 +208,7 @@ class Condor(BasicWMS):
 		jdl_str_list = [
 			'Universe = ' + self._universe,
 			'Executable = ' + script_cmd,
-		        'grid_resource = nordugrid arc-1-kit.gridka.de'
+		        'grid_resource = nordugrid arc-2-kit.gridka.de'
 		]
 		jdl_str_list.extend(self._jdl_writer.get_jdl())
 		jdl_str_list.extend([
