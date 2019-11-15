@@ -150,12 +150,12 @@ class Condor(BasicWMS):
 		else:  # UserMod style
 			fn_list = fn_list.split(' ')
 
-		if len(fn_list) > 0 or len(fn_list[0]) > 1:
+		if len(fn_list) > 0 or len(fn_list[0]) > 0:
 			fn_string = str()
 			for i in fn_list[:-1]:
 				fn_string += "{},".format(i)
-			fn_string += fn_list[-1]
-			return ['%s = %s' % (self._pool_req_dict['dataFiles'], fn_string)]
+			fn_string += "{}".format(fn_list[-1])
+			return ['%s = "%s"' % (self._pool_req_dict['dataFiles'], fn_string.replace('"', ''))]
 		return []
 
 	def _get_dest(self, config):
